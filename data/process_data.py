@@ -40,11 +40,11 @@ def clean_data(df):
     categories.columns = category_colnames
 
     for column in categories:
-    # set each value to be the last character of the string
-    categories[column] = column[-1]
+        # set each value to be the last character of the string
+        categories[column] = column[-1]
     
-    # convert column from string to numeric
-    categories[column] = pd.to_numeric(column[-1])
+        # convert column from string to numeric
+        categories[column] = pd.to_numeric(column[-1])
 
     # drop the original categories column from `df`
     df = df.drop('categories', axis = 1)
