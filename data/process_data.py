@@ -13,8 +13,8 @@ def load_data(messages_filepath, categories_filepath):
     Output:
         df - dataframe - merged message and categoreis
     '''
-    messages = pd.read_csv(messages_filepath)
-    categories = pd.read_csv(categories_filepath)
+    messages = pd.read_csv(messages_filepath).drop_duplicates()
+    categories = pd.read_csv(categories_filepath).drop_duplicates()
 
     # merge datasets
     df = messages.merge(categories, on = 'id', how = 'left')
@@ -41,16 +41,16 @@ def clean_data(df):
 
     for column in categories:
         # set each value to be the last character of the string
-        categories[column] = column[-1]
-    
+        categories[column] = categories[column].str.strip().str[-1]
+        
         # convert column from string to numeric
-        categories[column] = pd.to_numeric(column[-1])
+        categories[column] = pd.to_numeric(categories[column])
 
     # drop the original categories column from `df`
     df = df.drop('categories', axis = 1)
 
     # concatenate the original dataframe with the new `categories` dataframe
-    df = pd.concat([df, categories], axis = 1)
+    df = pd.concat([df, categories], axis = 1).fillna(0)
 
     # drop duplicates
     df = df.drop_duplicates()
