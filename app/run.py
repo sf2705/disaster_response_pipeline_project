@@ -8,6 +8,8 @@ from nltk.tokenize import word_tokenize
 from flask import Flask
 from flask import render_template, request, jsonify
 from plotly.graph_objs import Bar
+from plotly.graph_objs import Pie
+
 from sklearn.externals import joblib
 from sqlalchemy import create_engine
 
@@ -42,15 +44,19 @@ def index():
     # TODO: Below is an example - modify to extract data for your own visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
+
+    # Visual 2
+    category_counts = df.drop(columns = ['id', 'message', 'original', 'genre']).sum(axis = 1)
+    category_names = df.drop(columns = ['id', 'message', 'original', 'genre']).columns
     
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
     graphs = [
         {
             'data': [
-                Bar(
-                    x=genre_names,
-                    y=genre_counts
+                Pie(
+                    labels=genre_names,
+                    values=genre_counts
                 )
             ],
 
@@ -63,9 +69,32 @@ def index():
                     'title': "Genre"
                 }
             }
+        },
+    
+        {
+            'data': [
+                Bar(
+                    x=category_names,
+                    y=category_counts
+                )
+            ],
+
+            'layout': {
+                'title': 'Distribution of Message Categories',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Categories",
+                    'categoryorder': 'array',
+                    'categoryarray': [i for _, i in sorted(zip(category_counts, category_names), reverse = True)]
+                }
+            }
         }
     ]
-    
+
+
+
     # encode plotly graphs in JSON
     ids = ["graph-{}".format(i) for i, _ in enumerate(graphs)]
     graphJSON = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
