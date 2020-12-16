@@ -14,17 +14,25 @@
 
 
 
-#### 1, Installations
+#### 1, Libraries used
+Regular expression - re
+Process dataframe - numpy, pandas
+Database access - sqlalchemy
+Natural Language Processing - nltk
+Machine Learning - sklearn
+Save model - pickle
+System access - sys
 
-​	No special installation required
 
 #### 2. Project Motivation 
 
-​	Practice building piplines as a data engineering. This project includes ETL pipline, NLP pipline and Machine Learning pipline.
+​Practice building piplines as a data engineering. This project includes ETL pipline, NLP pipline and Machine Learning pipline.
 
 #### 3. Technical details 
 
-This is an ongoing project. Will update this section in the near future
+1. Build ETL pipline to extract and clean the data, then saved into database
+2. Build Machine Learning pipline with NLP pipline to process text information and build model to categorize messages
+3. Use Flask + Plotly to show Disaster Response Dashboard
 
 #### 4.Licensing, Authors, Acknowledgements 
 
