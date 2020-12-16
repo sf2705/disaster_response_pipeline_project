@@ -121,11 +121,31 @@ def build_model():
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    pass
+    '''
+    Input: model - grid search object
+           X_test - numpy array
+           Y_test - numpy array
+           category_name - list
+    Output: None
+    '''
+
+    Y_pred = model.predict(X_test)
+    Y_test_transpose = Y_test.T
+    Y_pred_transpose = Y_pred.T
+    for i in range(len(Y_test_transpose)):
+        print(category_names[i], classification_report(Y_test[i], Y_pred[i]))
+    return 
+    
 
 
 def save_model(model, model_filepath):
-    pass
+    '''
+    Input: model - grid search object
+           model_filepath - string
+    Output: None
+    '''
+    pickle.dump(model, open(model_filename, 'wb'))
+    return
 
 
 def main():
