@@ -2,6 +2,7 @@
 import re
 import numpy as np
 import pandas as pd
+import pickle
 
 from sqlalchemy import create_engine
 
@@ -19,6 +20,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import classification_report
+from custom_transformer import StartingVerbExtractor
 
 import sys
 
@@ -67,25 +69,6 @@ def tokenize(text):
 
     return clean_tokens
 
-# create a customized transformer
-class StartingVerbExtractor(BaseEstimator, TransformerMixin):
-
-    def starting_verb(self, text):
-        # check if a sentence is starting with a verb
-        sentence_list = nltk.sent_tokenize(text)
-        for sentence in sentence_list:
-            pos_tags = nltk.pos_tag(tokenize(sentence))
-            first_word, first_tag = pos_tags[0]
-            if first_tag in ['VB', 'VBP'] or first_word == 'RT':
-                return True
-        return False
-
-    def fit(self, x, y=None):
-        return self
-
-    def transform(self, X):
-        X_tagged = pd.Series(X).apply(self.starting_verb)
-        return pd.DataFrame(X_tagged)    
 
 
 def build_model():
@@ -109,15 +92,7 @@ def build_model():
         ('clf', MultiOutputClassifier(KNeighborsClassifier()))
     ])
     
-    # specify parameters for grid search
-    parameters = {
-        'clf__estimator__min_samples_split': 3
-    }
-
-    # create grid search object
-    cv = GridSearchCV(pipeline, param_grid = parameters)
-    
-    return cv
+    return pipeline
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
@@ -144,11 +119,12 @@ def save_model(model, model_filepath):
            model_filepath - string
     Output: None
     '''
-    pickle.dump(model, open(model_filename, 'wb'))
+    pickle.dump(model, open(model_filepath, 'wb'))
     return
 
 
 def main():
+
     if len(sys.argv) == 3:
         database_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))
