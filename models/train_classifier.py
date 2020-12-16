@@ -24,18 +24,39 @@ import sys
 
 
 def load_data(database_filepath):
+    '''
+    Input: database_filepath - str - path to the database
+    Output: X - numpy array - messages
+            y - numpy array - dummies for categories
+            category_names - list - categories
+    '''
+
+    # connect to database
     engine = create_engine('sqlite:///' + database_filepath)
     df = pd.read_sql_table('DisasterResponse', engine)  
+
+    # Get X and y for the model
     X = df['message'].values
     y = df.drop(columns = ['id', 'message', 'original', 'genre']).values
+    category_names = df.drop(columns = ['id', 'message', 'original', 'genre']).columns
+    return X, y, category_names
 
 
 def tokenize(text):
+    '''
+    Input: text - str - message to process
+    Output: clean_tokens - list - list of tokens after cleaned
+    '''
+
+    # regular expression for urls
     url_regex = "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
+    
+    # find all urls and replace with urlplaceholder
     detected_urls = re.findall(url_regex, text)
     for url in detected_urls:
         text = text.replace(url, "urlplaceholder")
 
+    # separate text to tokens and limmatize, change to lower case and get rid of spaces
     tokens = word_tokenize(text)
     lemmatizer = WordNetLemmatizer()
 
@@ -46,9 +67,11 @@ def tokenize(text):
 
     return clean_tokens
 
+# create a customized transformer
 class StartingVerbExtractor(BaseEstimator, TransformerMixin):
 
     def starting_verb(self, text):
+        # check if a sentence is starting with a verb
         sentence_list = nltk.sent_tokenize(text)
         for sentence in sentence_list:
             pos_tags = nltk.pos_tag(tokenize(sentence))
@@ -66,7 +89,35 @@ class StartingVerbExtractor(BaseEstimator, TransformerMixin):
 
 
 def build_model():
-    pass
+    '''
+    Input: None
+    Output: cv - grid search object
+    '''
+
+    # building pipline with Feature Union
+    pipeline = Pipeline([
+        ('features', FeatureUnion([
+
+            ('text_pipeline', Pipeline([
+                ('vect', CountVectorizer(tokenizer=tokenize)),
+                ('tfidf', TfidfTransformer())
+            ])),
+
+            ('starting_verb', StartingVerbExtractor())
+        ])),
+
+        ('clf', MultiOutputClassifier(KNeighborsClassifier()))
+    ])
+    
+    # specify parameters for grid search
+    parameters = {
+        'clf__estimator__min_samples_split': 3
+    }
+
+    # create grid search object
+    cv = GridSearchCV(pipeline, param_grid = parameters)
+    
+    return cv
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
