@@ -36,6 +36,10 @@ def tokenize(text):
 class StartingVerbExtractor(BaseEstimator, TransformerMixin):
 
     def starting_verb(self, text):
+        '''
+        Inpupt: text - string - sentence to process
+        Output: True / False - binary - if the sentence start with a verb, return True, otherwise False
+        '''
         sentence_list = nltk.sent_tokenize(text)
         for sentence in sentence_list:
             pos_tags = nltk.pos_tag(tokenize(sentence))
@@ -45,8 +49,15 @@ class StartingVerbExtractor(BaseEstimator, TransformerMixin):
         return False
 
     def fit(self, x, y=None):
+        '''
+        fit method is required for transformer
+        '''
         return self
 
     def transform(self, X):
+        '''
+        Input: X - dataframe- dependent variable
+        Output X_tagged - dataframe
+        '''
         X_tagged = pd.Series(X).apply(self.starting_verb)
         return pd.DataFrame(X_tagged)
