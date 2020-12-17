@@ -89,10 +89,19 @@ def build_model():
             ('starting_verb', StartingVerbExtractor())
         ])),
 
-        ('clf', MultiOutputClassifier(KNeighborsClassifier()))
+        ('clf', MultiOutputClassifier(RandomForestClassifier()))
     ])
+
+    # specify parameters for grid search
+    parameters = {
+        'clf__estimator__n_estimators': [100, 200]
+    }
+
+    # create grid search object
+    cv = GridSearchCV(pipeline, param_grid = parameters)
     
-    return pipeline
+    return cv
+    
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
