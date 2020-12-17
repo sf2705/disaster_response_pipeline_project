@@ -94,7 +94,7 @@ def build_model():
 
     # specify parameters for grid search
     parameters = {
-        'clf__estimator__n_estimators': [100, 200]
+        'features__text_pipeline__vect__max_df': (0.5, 0.75)
     }
 
     # create grid search object
